@@ -1,0 +1,105 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.13'
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.3.5.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'java'
+    id 'com.google.protobuf' version '0.8.13'
+    id 'idea'
+}
+
+group = 'com.chat'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    compile 'io.github.lognet:grpc-spring-boot-starter:4.2.2'
+}
+
+
+sourceSets {
+    main {
+        proto {
+            srcDir 'src/main/protos'
+        }
+        java {
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if ("io.grpc".equalsIgnoreCase(details.requested.group)) {
+            details.useVersion "1.33.0"
+        }
+    }
+}
+
+idea {
+    module {
+        generatedSourceDirs = [ file("src/main/generated") ]
+
+        sourceDirs += file("${projectDir}/src/main/generated")
+        sourceDirs += file("${projectDir}/src/main")
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.5.1'
+    }
+    plugins {
+        javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.23.0"
+        }
+    }
+
+
+    generateProtoTasks {
+        ofSourceSet('main').each { task ->
+            task.builtins {
+                java {
+                    outputSubDir = 'generated'
+                }
+            }
+            task.plugins {
+                grpc {
+                    outputSubDir = 'generated'
+                }
+            }
+        }
+    }
+    generatedFilesBaseDir = 'src'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task cleanProtoGen {
+    doFirst {
+        delete("$projectDir/src/main/protoGen")
+    }
+}
+clean.dependsOn cleanProtoGen

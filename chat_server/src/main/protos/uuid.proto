@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option java_package = 'com.chat.grpc';
+
+message UUID {
+  string uuid = 1;
+}
