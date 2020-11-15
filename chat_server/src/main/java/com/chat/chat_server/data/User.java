@@ -35,6 +35,10 @@ public class User implements DatabaseObject {
     @OneToMany(targetEntity = MessageBase.class)
     private List<MessageBase> messages = new ArrayList<>();
 
+    public User() {
+        this.creationDate = new Date();
+    }
+
     @Override
     public Date getCreationDate() {
         return creationDate;
