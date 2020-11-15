@@ -1,5 +1,6 @@
 package com.chat.chat_server;
 
+import com.chat.chat_server.data.User;
 import com.chat.grpc.ChatGrpc;
 import com.chat.grpc.ChatServer;
 import com.chat.grpc.Uuid;
@@ -8,6 +9,8 @@ import org.lognet.springboot.grpc.GRpcService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import java.util.UUID;
 
 @GRpcService
 public class ChatService extends ChatGrpc.ChatImplBase {
@@ -20,6 +23,7 @@ public class ChatService extends ChatGrpc.ChatImplBase {
     }
 
     @Override
+    @Transactional
     public void sendMessage(ChatServer.SendMessageRequest request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
         responseObserver.onNext(ChatServer.ChatMessage.newBuilder().build());
         responseObserver.onCompleted();

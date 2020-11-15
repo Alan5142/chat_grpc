@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ChatApp</string>
+
+    <string name="com_auth0_client_id">BZx4ePp6nYgZxn707VTjUXkjFcBgtNwu</string>
+    <string name="com_auth0_domain">chatgrpc.us.auth0.com</string>
+    <string name="login_button">LogIn</string>
+</resources>
