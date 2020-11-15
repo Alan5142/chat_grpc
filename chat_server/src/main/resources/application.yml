@@ -1,0 +1,16 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: qvQx1Ln61ZiORab4EBxG5OwHl6lk5RgM
+            client-secret: ${CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          auth0:
+            # trailing slash is important!
+            issuer-uri: https://test-alan.us.auth0.com/
