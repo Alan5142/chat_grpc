@@ -21,7 +21,7 @@ public abstract class MessageBase {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(updatable = false, nullable = false)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @ManyToOne(targetEntity = Chat.class)
     private Chat belongsTo;
@@ -69,11 +69,8 @@ public abstract class MessageBase {
     public abstract String getContent();
 
     public ChatServer.ChatMessage toChatMessage() {
-        ChatServer.ImageMessage imageMessage = null;
-        ChatServer.TextMessage textMessage = null;
-
         ChatServer.ChatMessage.Builder builder = ChatServer.ChatMessage.newBuilder()
-                .setGroup(Uuid.UUID.newBuilder().setUuid(belongsTo.toString()).build())
+                .setGroup(Uuid.UUID.newBuilder().setUuid(belongsTo.getId().toString()).build())
                 .setSender(sender.toGrpcUser())
                 .setTime(Timestamp.newBuilder()
                         .setSeconds(creationDate.getTime())

@@ -18,10 +18,10 @@ public class User implements DatabaseObject {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(updatable = false, nullable = false)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @Column(nullable = false)
-    private String name;
+    private String name = "";
 
     @ManyToMany(targetEntity = Chat.class)
     private List<Chat> memberOf = new ArrayList<>();
@@ -29,17 +29,13 @@ public class User implements DatabaseObject {
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date creationDate;
+    private Date creationDate = new Date();
 
     @OneToMany(targetEntity = Chat.class)
     private List<Chat> adminOf = new ArrayList<>();
 
     @OneToMany(targetEntity = MessageBase.class)
     private List<MessageBase> messages = new ArrayList<>();
-
-    public User() {
-        this.creationDate = new Date();
-    }
 
     @Override
     public Date getCreationDate() {

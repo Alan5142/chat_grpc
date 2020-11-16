@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 public class ImageMessage extends MessageBase {
 
     @Column(nullable = false)
-    private String contentUrl;
+    private String contentUrl = "";
 
     @Override
     public String getContent() {
