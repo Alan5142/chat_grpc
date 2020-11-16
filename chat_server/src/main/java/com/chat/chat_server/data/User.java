@@ -1,5 +1,7 @@
 package com.chat.chat_server.data;
 
+import com.chat.grpc.ChatServer;
+import com.chat.grpc.Uuid;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -63,5 +65,12 @@ public class User implements DatabaseObject {
 
     public List<Chat> getChats() {
         return memberOf;
+    }
+
+    public ChatServer.User toGrpcUser() {
+        return ChatServer.User.newBuilder()
+                .setId(Uuid.UUID.newBuilder().setUuid(id.toString()).build())
+                .setName(name)
+                .build();
     }
 }
