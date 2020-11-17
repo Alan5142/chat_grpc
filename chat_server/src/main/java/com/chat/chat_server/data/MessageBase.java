@@ -1,5 +1,8 @@
 package com.chat.chat_server.data;
 
+import com.chat.grpc.ChatServer;
+import com.chat.grpc.Uuid;
+import com.google.protobuf.Timestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -18,7 +21,7 @@ public abstract class MessageBase {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(updatable = false, nullable = false)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @ManyToOne(targetEntity = Chat.class)
     private Chat belongsTo;
@@ -64,4 +67,21 @@ public abstract class MessageBase {
     }
 
     public abstract String getContent();
+
+    public ChatServer.ChatMessage toChatMessage() {
+        ChatServer.ChatMessage.Builder builder = ChatServer.ChatMessage.newBuilder()
+                .setGroup(Uuid.UUID.newBuilder().setUuid(belongsTo.getId().toString()).build())
+                .setSender(sender.toGrpcUser())
+                .setTime(Timestamp.newBuilder()
+                        .setSeconds(creationDate.getTime())
+                        .build());
+
+        if (this instanceof ImageMessage) {
+            builder.setImageMessage(ChatServer.ImageMessage.newBuilder().setUrl(getContent()).build());
+        } else {
+            builder.setTextMessage(ChatServer.TextMessage.newBuilder().setContent(getContent()).build());
+        }
+
+        return builder.build();
+    }
 }

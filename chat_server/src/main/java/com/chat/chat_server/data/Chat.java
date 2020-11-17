@@ -36,6 +36,10 @@ public abstract class Chat implements DatabaseObject {
     @Column(nullable = false)
     private Date creationDate;
 
+    public Chat() {
+        this.id = UUID.randomUUID();
+    }
+
     @Override
     public Date getCreationDate() {
         return creationDate;

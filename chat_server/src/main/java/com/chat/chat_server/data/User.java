@@ -1,5 +1,7 @@
 package com.chat.chat_server.data;
 
+import com.chat.grpc.ChatServer;
+import com.chat.grpc.Uuid;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -16,10 +18,10 @@ public class User implements DatabaseObject {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(updatable = false, nullable = false)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @Column(nullable = false)
-    private String name;
+    private String name = "";
 
     @ManyToMany(targetEntity = Chat.class)
     private List<Chat> memberOf = new ArrayList<>();
@@ -27,17 +29,13 @@ public class User implements DatabaseObject {
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date creationDate;
+    private Date creationDate = new Date();
 
     @OneToMany(targetEntity = Chat.class)
     private List<Chat> adminOf = new ArrayList<>();
 
     @OneToMany(targetEntity = MessageBase.class)
     private List<MessageBase> messages = new ArrayList<>();
-
-    public User() {
-        this.creationDate = new Date();
-    }
 
     @Override
     public Date getCreationDate() {
@@ -63,5 +61,12 @@ public class User implements DatabaseObject {
 
     public List<Chat> getChats() {
         return memberOf;
+    }
+
+    public ChatServer.User toGrpcUser() {
+        return ChatServer.User.newBuilder()
+                .setId(Uuid.UUID.newBuilder().setUuid(id.toString()).build())
+                .setName(name)
+                .build();
     }
 }
