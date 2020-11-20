@@ -14,4 +14,4 @@ Servidor
 ---
 
 ## Descripción
-Servidor gRPC y app para Android para aplicación de chat.
+Servidor gRPC y app para Android para aplicación de chat. Que me da mucho asco por cierto, gracias.
