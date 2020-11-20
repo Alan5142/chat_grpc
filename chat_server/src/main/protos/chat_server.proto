@@ -9,7 +9,26 @@ option java_package = 'com.chat.grpc';
 service Chat {
   rpc JoinChat(UUID) returns (stream ChatMessage);
   rpc SendMessage(SendMessageRequest) returns (ChatMessage);
-  rpc CreateChat(User) returns (Group);
+  rpc CreateChat(CreateChatRequest) returns (Group);
+  rpc GetUserChats(GetUserChatsRequest) returns (GetUserChatsRequest);
+}
+
+message GetUserChatsResponse {
+  repeated Group chats = 1;
+}
+
+message GetUserChatsRequest {
+  UUID user_id = 1;
+}
+
+enum ChatType {
+  PairChat = 0;
+  GroupChat = 1;
+}
+
+message CreateChatRequest {
+  UUID user_id = 1;
+  ChatType chat_type = 2;
 }
 
 message SendMessageRequest {

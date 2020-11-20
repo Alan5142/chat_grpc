@@ -18,15 +18,15 @@ import java.util.UUID;
 public class ChatService extends ChatGrpc.ChatImplBase {
 
     private ChatHandlerService chatHandlerService;
+    private MessageDBHandler messageDBHandler;
 
     @Autowired
-    public ChatService(ChatHandlerService service) {
+    public ChatService(ChatHandlerService service, MessageDBHandler messageDBHandler) {
         this.chatHandlerService = service;
+        this.messageDBHandler = messageDBHandler;
     }
-
     @PersistenceContext
     private EntityManager em;
-
 
     @Override
     public void joinChat(Uuid.UUID request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
@@ -35,58 +35,59 @@ public class ChatService extends ChatGrpc.ChatImplBase {
     }
 
     @Override
-    public void createChat(ChatServer.User request, StreamObserver<ChatServer.Group> responseObserver) {
-        super.createChat(request, responseObserver);
+    public void getUserChats(ChatServer.GetUserChatsRequest request, StreamObserver<ChatServer.GetUserChatsRequest> responseObserver) {
+        super.getUserChats(request, responseObserver);
+    }
+
+    @Override
+    public void createChat(ChatServer.CreateChatRequest request, StreamObserver<ChatServer.Group> responseObserver) {
+        Chat newChat;
+        User creator = messageDBHandler
+                .find(User.class, UUID.fromString(request.getUserId().getUuid()));
+        switch (request.getChatType()) {
+            case PairChat:
+                newChat = new PairChat();
+                break;
+            case GroupChat:
+                newChat = new GroupChat();
+                break;
+            default:
+                responseObserver.onError(new Exception("No se bla bla"));
+                return;
+        }
+        newChat.setAdmin(creator);
+        newChat.getMembers().add(creator);
+        messageDBHandler.create(newChat);
+
+        responseObserver.onNext(newChat.toGrpc());
     }
 
     @Override
     @Transactional
     public void sendMessage(ChatServer.SendMessageRequest request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
-
         UUID chatId = UUID.fromString(request.getGroup().getUuid());
         UUID userId = UUID.fromString(request.getUserId().getUuid());
-
-        MessageBase message;
-        if (request.hasImageMessage()) {
-            message = new ImageMessage(request.getImageMessage().getUrl());
-        } else {
-            message = new TextMessage(request.getTextMessage().getContent());
-        }
-
-        message.setBelongsTo(new GroupChat());
-        message.setCreationDate(new Date());
-        message.setSender(new User());
-        message.setId(UUID.randomUUID());
-
-        chatHandlerService.broadcastMessage(chatId, message);
-
-        /*
-        Chat chat = em.find(Chat.class, chatId);
-        User user = em.find(User.class, userId);
+        Chat chat = this.messageDBHandler.find(Chat.class, chatId);
+        User yuser = this.messageDBHandler.find(User.class, userId);
 
         if (chat != null) {
             MessageBase message;
             if (request.hasImageMessage()) {
-                message = new ImageMessage(request.getImageMessage().getUrl());
+                message = new ImageMessage();
+                message.setContent(request.getImageMessage().getUrl());
             } else {
-                message = new TextMessage(request.getTextMessage().getContent());
+                message = new TextMessage();
+                message.setContent(request.getTextMessage().getContent());
             }
-
             message.setBelongsTo(chat);
-            message.setCreationDate(new Date());
-            message.setSender(user);
+            message.setSender(yuser);
             message.setId(UUID.randomUUID());
-
-            chat.getMessages().add(message);
-
-            em.persist(chat);
+            messageDBHandler.create(message);
 
             responseObserver.onNext(message.toChatMessage());
-            // Send to all listening clients
         } else {
             responseObserver.onError(new Exception("Chat no encontrado"));
         }
-        */
         responseObserver.onCompleted();
     }
 }

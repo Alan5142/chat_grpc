@@ -1,5 +1,7 @@
 package com.chat.chat_server.data;
 
+import com.chat.grpc.ChatServer;
+
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -12,5 +14,11 @@ public class PairChat extends Chat {
     @Override
     public int getUserLimit() {
         return MAX_USERS;
+    }
+
+    @Override
+    public ChatServer.Group toGrpc() {
+        return ChatServer.Group.newBuilder()
+                .build();
     }
 }

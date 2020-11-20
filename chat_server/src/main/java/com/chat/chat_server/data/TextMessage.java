@@ -5,10 +5,10 @@ import javax.persistence.Entity;
 
 @Entity
 public class TextMessage extends MessageBase {
-    @Column(nullable = false)
+    @Column
     private String content = "";
 
-    public TextMessage(String content) {
+    public void setContent(String content) {
         this.content = content;
     }
 

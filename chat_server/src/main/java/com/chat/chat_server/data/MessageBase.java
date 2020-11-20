@@ -26,13 +26,13 @@ public abstract class MessageBase {
     @ManyToOne(targetEntity = Chat.class)
     private Chat belongsTo;
 
-    @ManyToOne(targetEntity = Chat.class)
+    @ManyToOne(targetEntity = User.class)
     private User sender;
 
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date creationDate;
+    private Date creationDate = new Date();
 
     public UUID getId() {
         return id;
@@ -84,4 +84,6 @@ public abstract class MessageBase {
 
         return builder.build();
     }
+
+    public abstract void setContent(String content);
 }
