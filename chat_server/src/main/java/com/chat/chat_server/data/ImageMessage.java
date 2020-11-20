@@ -8,7 +8,7 @@ import javax.persistence.Entity;
 @Entity
 public class ImageMessage extends MessageBase {
 
-    @Column(nullable = false)
+    @Column
     private String contentUrl = "";
 
     @Override
@@ -16,7 +16,7 @@ public class ImageMessage extends MessageBase {
         return contentUrl;
     }
 
-    public ImageMessage(String contentUrl) {
+    public void setContent(String contentUrl) {
         this.contentUrl = contentUrl;
     }
 

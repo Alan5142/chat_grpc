@@ -1,5 +1,6 @@
 package com.chat.chat_server.data;
 
+import com.chat.grpc.ChatServer;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -20,7 +21,7 @@ public abstract class Chat implements DatabaseObject {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(updatable = false, nullable = false)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @ManyToOne(targetEntity = User.class)
     private User admin;
@@ -28,13 +29,14 @@ public abstract class Chat implements DatabaseObject {
     @ManyToMany(targetEntity = User.class)
     private List<User> members = new ArrayList<>();
 
-    @ManyToOne(targetEntity = MessageBase.class)
+    @OneToMany(targetEntity = MessageBase.class)
+    @JoinColumn(name = "belongs_to_id")
     private List<MessageBase> messages = new ArrayList<>();
 
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date creationDate;
+    private Date creationDate = new Date();
 
     public Chat() {
         this.id = UUID.randomUUID();
@@ -59,4 +61,34 @@ public abstract class Chat implements DatabaseObject {
     public List<MessageBase> getMessages() {
         return messages;
     }
+
+    public void addMessage(MessageBase message) {
+        this.messages.add(message);
+    }
+
+    public void setAdmin(User user) {
+        admin = user;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public User getAdmin() {
+        return admin;
+    }
+
+    public void setMembers(List<User> members) {
+        this.members = members;
+    }
+
+    public void setMessages(List<MessageBase> messages) {
+        this.messages = messages;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public abstract ChatServer.Group toGrpc();
 }
