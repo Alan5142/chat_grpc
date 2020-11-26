@@ -1,6 +1,7 @@
 package com.chat.chat_server.data;
 
 import com.chat.grpc.ChatServer;
+import com.chat.grpc.Uuid;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "Chats")
@@ -90,5 +92,23 @@ public abstract class Chat implements DatabaseObject {
         this.creationDate = creationDate;
     }
 
-    public abstract ChatServer.Group toGrpc();
+    public ChatServer.Group toGrpc() {
+        return toGrpcBuilder().build();
+    }
+
+    protected ChatServer.Group.Builder toGrpcBuilder() {
+        ChatServer.Group.Builder groupGrpcBuilder = ChatServer.Group.newBuilder()
+                .setId(Uuid.UUID.newBuilder().setUuid(getId().toString()).build())
+                .setAdmin(admin.toGrpcUser());
+
+        groupGrpcBuilder.addAllMembers(getMembers()
+                .stream()
+                .map(User::toGrpcUser)
+                .collect(Collectors.toList()));
+        groupGrpcBuilder.addAllMessages(getMessages()
+                .stream()
+                .map(MessageBase::toChatMessage)
+                .collect(Collectors.toList()));
+        return groupGrpcBuilder;
+    }
 }
