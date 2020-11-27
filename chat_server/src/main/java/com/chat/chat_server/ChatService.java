@@ -30,9 +30,10 @@ public class ChatService extends ChatGrpc.ChatImplBase {
     @PersistenceContext
     private EntityManager em;
 
+
     @Override
-    public void joinChat(Uuid.UUID request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
-        UUID chatId = UUID.fromString(request.getUuid());
+    public void joinChat(ChatServer.JoinChatRequest request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
+        UUID chatId = UUID.fromString(request.getId().getUuid());
         chatHandlerService.joinChat(chatId, responseObserver);
     }
 
@@ -116,6 +117,19 @@ public class ChatService extends ChatGrpc.ChatImplBase {
             messageDBHandler.create(message);
 
             responseObserver.onNext(message.toChatMessage());
+            chatHandlerService.broadcastMessage(chat.getId(), message);
+        } else {
+            responseObserver.onError(new Exception("Chat no encontrado"));
+        }
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getChat(ChatServer.GetChatRequest request, StreamObserver<Group> responseObserver) {
+        UUID chatId = UUID.fromString(request.getId().getUuid());
+        Chat chat = this.messageDBHandler.find(Chat.class, chatId);
+        if (chat != null) {
+           responseObserver.onNext(chat.toGrpc());
         } else {
             responseObserver.onError(new Exception("Chat no encontrado"));
         }
