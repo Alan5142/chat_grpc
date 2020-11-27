@@ -1,4 +1,25 @@
-apply plugin: 'com.android.application'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.13'
+    }
+}
+
+plugins {
+    id 'com.android.application'
+    id 'com.google.protobuf' version '0.8.13'
+}
+
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if ("io.grpc".equalsIgnoreCase(details.requested.group)) {
+            details.useVersion "1.33.0"
+        }
+    }
+}
 
 android {
     compileSdkVersion 30
@@ -28,6 +49,11 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
+
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -36,5 +62,28 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.auth0.android:auth0:1.+'
+    implementation "com.google.protobuf:protobuf-gradle-plugin:0.8.13"
+    implementation 'io.grpc:grpc-okhttp:1.33.1' // CURRENT_GRPC_VERSION
+    implementation 'io.grpc:grpc-protobuf-lite:1.33.1' // CURRENT_GRPC_VERSION
+    implementation 'io.grpc:grpc-stub:1.33.1' // CURRENT_GRPC_VERSION
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+}
 
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:3.12.0' }
+    plugins {
+        grpc { artifact = 'io.grpc:protoc-gen-grpc-java:1.33.1' // CURRENT_GRPC_VERSION
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java { option 'lite' }
+            }
+            task.plugins {
+                grpc { // Options added to --grpc_out
+                    option 'lite' }
+            }
+        }
+    }
 }

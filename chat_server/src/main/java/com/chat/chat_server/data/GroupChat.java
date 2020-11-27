@@ -28,7 +28,9 @@ public class GroupChat extends Chat {
     }
 
     @Override
-    public ChatServer.Group toGrpc() {
-        return ChatServer.Group.newBuilder().build();
+    protected ChatServer.Group.Builder toGrpcBuilder() {
+        ChatServer.Group.Builder builder = super.toGrpcBuilder();
+        builder.setGroupType(ChatServer.GroupType.GROUP);
+        return builder;
     }
 }

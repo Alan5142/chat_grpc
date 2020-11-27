@@ -17,8 +17,9 @@ public class PairChat extends Chat {
     }
 
     @Override
-    public ChatServer.Group toGrpc() {
-        return ChatServer.Group.newBuilder()
-                .build();
+    protected ChatServer.Group.Builder toGrpcBuilder() {
+        ChatServer.Group.Builder builder = super.toGrpcBuilder();
+        builder.setGroupType(ChatServer.GroupType.PAIR);
+        return builder;
     }
 }
