@@ -15,12 +15,8 @@ import java.util.*;
                 query = "select a from User a where a.auth0Id=:id"),
 })
 public class User implements DatabaseObject {
+
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
     @Column(updatable = false, nullable = false)
     private UUID id = UUID.randomUUID();
 

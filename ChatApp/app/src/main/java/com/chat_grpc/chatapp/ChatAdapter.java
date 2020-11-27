@@ -1,6 +1,7 @@
 package com.chat_grpc.chatapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,10 @@ public class ChatAdapter extends ArrayAdapter<ChatServer.Group> {
         ChatServer.Group group = getItem(position);
 
         if (group != null) {
+            v.setOnClickListener(view ->{
+                Intent intent = new Intent(context, MessagingActivity.class);
+                context.startActivity(intent.putExtra("ChatID", group.getId().getUuid()));
+            });
             TextView name = (TextView) v.findViewById(R.id.chat_name);
             if (name != null) {
                 name.setText(group.getName());
@@ -46,4 +51,6 @@ public class ChatAdapter extends ArrayAdapter<ChatServer.Group> {
 
         return v;
     }
+
+
 }

@@ -7,11 +7,20 @@ import 'google/protobuf/timestamp.proto';
 option java_package = 'com.chat.grpc';
 
 service Chat {
-  rpc JoinChat(UUID) returns (stream ChatMessage);
+  rpc JoinChat(JoinChatRequest) returns (stream ChatMessage);
   rpc SendMessage(SendMessageRequest) returns (ChatMessage);
   rpc CreateChat(CreateChatRequest) returns (Group);
   rpc GetUserChats(GetUserChatsRequest) returns (GetUserChatsResponse);
   rpc CreateUser(RegisterUserRequest) returns (User);
+  rpc GetChat(GetChatRequest) returns (Group);
+}
+
+message JoinChatRequest{
+  UUID id = 1;
+}
+
+message GetChatRequest{
+  UUID id = 1;
 }
 
 message RegisterUserRequest {
