@@ -10,6 +10,10 @@ import java.util.*;
 
 @Entity
 @Table(name = "ChatUsers")
+@NamedQueries({
+        @NamedQuery(name = "User.findByAuth0Id",
+                query = "select a from User a where a.auth0Id=:id"),
+})
 public class User implements DatabaseObject {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -21,9 +25,20 @@ public class User implements DatabaseObject {
     private UUID id = UUID.randomUUID();
 
     @Column(nullable = false)
+    private String email = "";
+
+    @Column(nullable = false)
     private String name = "";
 
-    @ManyToMany(targetEntity = Chat.class)
+    @Column(nullable = false)
+    private String auth0Id = "";
+
+    @JoinTable(
+            name = "chats_members",
+            joinColumns = @JoinColumn(name = "fk_user_id", nullable = false),
+            inverseJoinColumns = @JoinColumn(name="fk_chat_id", nullable = false)
+    )
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = Chat.class)
     private List<Chat> memberOf = new ArrayList<>();
 
     @Basic
@@ -55,8 +70,32 @@ public class User implements DatabaseObject {
         this.name = name;
     }
 
+    public List<MessageBase> getMessages() {
+        return messages;
+    }
+
+    public List<Chat> getMemberOf() {
+        return memberOf;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public String getAuth0Id() {
+        return auth0Id;
+    }
+
+    public void setAuth0Id(String auth0Id) {
+        this.auth0Id = auth0Id;
     }
 
     public List<Chat> getChats() {
@@ -67,6 +106,7 @@ public class User implements DatabaseObject {
         return ChatServer.User.newBuilder()
                 .setId(Uuid.UUID.newBuilder().setUuid(id.toString()).build())
                 .setName(name)
+                .setEmail(email)
                 .build();
     }
 }

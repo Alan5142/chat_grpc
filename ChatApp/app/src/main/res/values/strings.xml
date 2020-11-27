@@ -4,4 +4,6 @@
     <string name="com_auth0_client_id">BZx4ePp6nYgZxn707VTjUXkjFcBgtNwu</string>
     <string name="com_auth0_domain">chatgrpc.us.auth0.com</string>
     <string name="login_button">LogIn</string>
+    <string name="login_error">No se pudo iniciar sesión</string>
+    <string name="grpc_host">192.168.100.236:6565</string>
 </resources>

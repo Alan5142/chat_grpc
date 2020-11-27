@@ -12,9 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -40,7 +37,21 @@ public class ChatService extends ChatGrpc.ChatImplBase {
     }
 
     @Override
-    public void getUserChats(ChatServer.GetUserChatsRequest request, StreamObserver<ChatServer.GetUserChatsRequest> responseObserver) {
+    public void createUser(ChatServer.RegisterUserRequest request, StreamObserver<ChatServer.User> responseObserver) {
+        User user = messageDBHandler.findUserByAuth0Id(request.getAuth0Id());
+        if (user == null) {
+            user = new User();
+            user.setName(request.getName());
+            user.setEmail(request.getEmail());
+            user.setAuth0Id(request.getAuth0Id());
+            messageDBHandler.create(user);
+        }
+        responseObserver.onNext(user.toGrpcUser());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getUserChats(ChatServer.GetUserChatsRequest request, StreamObserver<ChatServer.GetUserChatsResponse> responseObserver) {
         User user = messageDBHandler.find(User.class, UUID.fromString(request.getUserId().getUuid()));
         if (user == null) {
             responseObserver.onError(new Exception("Error en el ID"));
@@ -48,10 +59,10 @@ public class ChatService extends ChatGrpc.ChatImplBase {
             return;
         }
 
-        responseObserver.onNext(ChatServer.GetUserChatsRequest.newBuilder()
-                .setUserId(request.getUserId())
+        ChatServer.GetUserChatsResponse response = ChatServer.GetUserChatsResponse.newBuilder()
                 .addAllChats(user.getChats().stream().map(Chat::toGrpc).collect(Collectors.toList()))
-                .build());
+                .build();
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
@@ -72,8 +83,10 @@ public class ChatService extends ChatGrpc.ChatImplBase {
                 responseObserver.onCompleted();
                 return;
         }
+        newChat.setName(request.getName());
         newChat.setAdmin(creator);
         newChat.getMembers().add(creator);
+        creator.getChats().add(newChat);
         messageDBHandler.create(newChat);
 
         responseObserver.onNext(newChat.toGrpc());

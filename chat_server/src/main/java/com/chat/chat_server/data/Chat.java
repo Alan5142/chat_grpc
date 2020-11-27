@@ -25,15 +25,24 @@ public abstract class Chat implements DatabaseObject {
     @Column(updatable = false, nullable = false)
     private UUID id = UUID.randomUUID();
 
+    @Column(nullable = true)
+    private String name;
+
     @ManyToOne(targetEntity = User.class)
     private User admin;
 
-    @ManyToMany(targetEntity = User.class)
+    @JoinTable(
+            name = "chats_members",
+            joinColumns = @JoinColumn(name="fk_chat_id", nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "fk_user_id", nullable = false)
+    )
+    @ManyToMany(fetch = FetchType.EAGER, targetEntity = User.class)
     private List<User> members = new ArrayList<>();
 
     @OneToMany(targetEntity = MessageBase.class)
     @JoinColumn(name = "belongs_to_id")
     private List<MessageBase> messages = new ArrayList<>();
+
 
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
@@ -42,6 +51,14 @@ public abstract class Chat implements DatabaseObject {
 
     public Chat() {
         this.id = UUID.randomUUID();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -99,7 +116,8 @@ public abstract class Chat implements DatabaseObject {
     protected ChatServer.Group.Builder toGrpcBuilder() {
         ChatServer.Group.Builder groupGrpcBuilder = ChatServer.Group.newBuilder()
                 .setId(Uuid.UUID.newBuilder().setUuid(getId().toString()).build())
-                .setAdmin(admin.toGrpcUser());
+                .setAdmin(admin.toGrpcUser())
+                .setName(name);
 
         groupGrpcBuilder.addAllMembers(getMembers()
                 .stream()

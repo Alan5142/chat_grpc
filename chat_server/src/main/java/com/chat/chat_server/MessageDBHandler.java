@@ -2,14 +2,15 @@ package com.chat.chat_server;
 
 import com.chat.chat_server.data.Chat;
 import com.chat.chat_server.data.MessageBase;
+import com.chat.chat_server.data.User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.ApplicationScope;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.context.annotation.SessionScope;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 @ApplicationScope
@@ -25,6 +26,19 @@ public class MessageDBHandler {
     }
 
     @Transactional
+    public User findUserByAuth0Id(String id) {
+        TypedQuery<User> queryByAuth0Id = em.createNamedQuery(
+                "User.findByAuth0Id", User.class
+        );
+        queryByAuth0Id.setParameter("id", id);
+        try {
+            return queryByAuth0Id.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    @Transactional
     public <T> boolean create(T object) {
         try {
             em.merge(object);
@@ -34,6 +48,7 @@ public class MessageDBHandler {
             return false;
         }
     }
+
     @Transactional
     public <T> boolean save(T object) {
         try {
