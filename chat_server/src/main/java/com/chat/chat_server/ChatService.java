@@ -5,13 +5,22 @@ import com.chat.grpc.ChatGrpc;
 import com.chat.grpc.ChatServer;
 import com.chat.grpc.ChatServer.Group;
 import com.chat.grpc.Uuid;
+import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
+import io.minio.MinioClient;
+import io.minio.ObjectWriteResponse;
+import io.minio.PutObjectArgs;
+import io.minio.UploadObjectArgs;
 import org.lognet.springboot.grpc.GRpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.io.ByteArrayInputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -129,9 +138,56 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         UUID chatId = UUID.fromString(request.getId().getUuid());
         Chat chat = this.messageDBHandler.find(Chat.class, chatId);
         if (chat != null) {
-           responseObserver.onNext(chat.toGrpc());
+            responseObserver.onNext(chat.toGrpc());
         } else {
             responseObserver.onError(new Exception("Chat no encontrado"));
+        }
+        responseObserver.onCompleted();
+    }
+
+    @Transactional
+    @Override
+    public void addToChat(ChatServer.AddToChatRequest request, StreamObserver<Empty> responseObserver) {
+        User user = messageDBHandler.findUserByEmail(request.getUserToAddEmail());
+        Chat chat = this.messageDBHandler.find(Chat.class, UUID.fromString(request.getChatId().getUuid()));
+        try {
+            if (!chat.getMembers().contains(user)) {
+                chat.getMembers().add(user);
+            }
+            responseObserver.onNext(Empty.newBuilder().build());
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void uploadImage(ChatServer.UploadImageRequest request, StreamObserver<ChatServer.UploadImageResponse> responseObserver) {
+        try {
+            MinioClient minioClient =
+                    MinioClient.builder()
+                            .endpoint(System.getenv("MINIO_ENDPOINT"))
+                            .credentials(System.getenv("MINIO_ACCESS_KEY"), System.getenv("MINIO_SECRET_KEY"))
+                            .build();
+
+            byte[] bytes = request.getImage().toByteArray();
+
+            String name = String.format("%s%s", UUID.randomUUID().toString().replace("-", ""), request.getName());
+
+            ObjectWriteResponse response = minioClient.putObject(PutObjectArgs.builder()
+                    .contentType(URLConnection.guessContentTypeFromName(request.getName()))
+                    .object(name)
+                    .bucket("images")
+                    .stream(new ByteArrayInputStream(bytes), bytes.length, 1024 * 1024 * 10)
+                    .build());
+
+            String url = String.format("%s/%s/%s", System.getenv("MINIO_ENDPOINT"), "images", name);
+
+            responseObserver.onNext(ChatServer.UploadImageResponse.newBuilder()
+                    .setUrl(url)
+                    .build());
+        } catch (Exception e) {
+            responseObserver.onError(e);
         }
         responseObserver.onCompleted();
     }

@@ -1,12 +1,12 @@
 package com.chat_grpc.chatapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ListView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.chat.grpc.ChatGrpc;
 import com.chat.grpc.ChatServer;
@@ -15,12 +15,11 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import io.grpc.stub.AbstractAsyncStub;
+import javax.annotation.Nullable;
+
 import io.grpc.stub.StreamObserver;
 
 public class MessagingActivity extends AppCompatActivity {
@@ -75,7 +74,7 @@ public class MessagingActivity extends AppCompatActivity {
 
         Futures.addCallback(request, new FutureCallback<ChatServer.Group>() {
             @Override
-            public void onSuccess(@NullableDecl ChatServer.Group result) {
+            public void onSuccess(@Nullable ChatServer.Group result) {
                 runOnUiThread(() -> {
                     messageList = new ArrayList<>();
                     messageList.addAll(result.getMessagesList());

@@ -13,6 +13,22 @@ service Chat {
   rpc GetUserChats(GetUserChatsRequest) returns (GetUserChatsResponse);
   rpc CreateUser(RegisterUserRequest) returns (User);
   rpc GetChat(GetChatRequest) returns (Group);
+  rpc AddToChat(AddToChatRequest) returns (google.protobuf.Empty);
+  rpc UploadImage(UploadImageRequest) returns (UploadImageResponse);
+}
+
+message UploadImageRequest {
+  bytes image = 1;
+  string name = 2;
+}
+
+message UploadImageResponse {
+  string url = 1;
+}
+
+message AddToChatRequest {
+  UUID chat_id = 1;
+  string user_to_add_email = 2;
 }
 
 message JoinChatRequest{

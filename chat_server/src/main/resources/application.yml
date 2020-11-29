@@ -1,3 +1,7 @@
+grpc:
+  enableReflection: true
+  port: 6565
+  enabled: true
 spring:
   security:
     oauth2:

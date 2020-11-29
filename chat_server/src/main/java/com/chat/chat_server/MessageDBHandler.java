@@ -39,6 +39,19 @@ public class MessageDBHandler {
     }
 
     @Transactional
+    public User findUserByEmail(String email) {
+        TypedQuery<User> queryByEmail = em.createNamedQuery(
+                "User.findByEmail", User.class
+        );
+        queryByEmail.setParameter("email", email);
+        try {
+            return queryByEmail.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    @Transactional
     public <T> boolean create(T object) {
         try {
             em.merge(object);
@@ -58,6 +71,4 @@ public class MessageDBHandler {
             return false;
         }
     }
-
-
 }

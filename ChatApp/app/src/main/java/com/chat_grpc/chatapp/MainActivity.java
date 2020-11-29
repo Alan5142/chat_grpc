@@ -26,8 +26,6 @@ import com.chat.grpc.ChatServer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
-
 public class MainActivity extends AppCompatActivity {
     private Auth0 auth0;
 
@@ -89,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                                                 .setAuth0Id(userProfile.getId())
                                                 .build()), new FutureCallback<ChatServer.User>() {
                                             @Override
-                                            public void onSuccess(@NullableDecl ChatServer.User result) {
+                                            public void onSuccess(@Nullable ChatServer.User result) {
                                                 editor.putString("id", result.getId().getUuid());
                                                 editor.commit();
                                                 goToMainScreen();
