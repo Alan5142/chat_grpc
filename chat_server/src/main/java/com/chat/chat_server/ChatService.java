@@ -78,28 +78,38 @@ public class ChatService extends ChatGrpc.ChatImplBase {
 
     @Override
     public void createChat(ChatServer.CreateChatRequest request, StreamObserver<Group> responseObserver) {
-        Chat newChat;
-        User creator = messageDBHandler
-                .find(User.class, UUID.fromString(request.getUserId().getUuid()));
-        switch (request.getChatType()) {
-            case PairChat:
-                newChat = new PairChat();
-                break;
-            case GroupChat:
-                newChat = new GroupChat();
-                break;
-            default:
-                responseObserver.onError(new Exception("No se bla bla"));
-                responseObserver.onCompleted();
-                return;
-        }
-        newChat.setName(request.getName());
-        newChat.setAdmin(creator);
-        newChat.getMembers().add(creator);
-        creator.getChats().add(newChat);
-        messageDBHandler.create(newChat);
+        try {
 
-        responseObserver.onNext(newChat.toGrpc());
+            Chat newChat;
+            User creator = messageDBHandler
+                    .find(User.class, UUID.fromString(request.getUserId().getUuid()));
+            switch (request.getChatType()) {
+                case PairChat:
+                    newChat = new PairChat();
+                    User partner = messageDBHandler.findUserByEmail(request.getPartnerEmail());
+                    if (partner == null) {
+                        throw new Exception("No se pudo crear");
+                    }
+                    newChat.getMembers().add(partner);
+                    break;
+                case GroupChat:
+                    newChat = new GroupChat();
+                    break;
+                default:
+                    responseObserver.onError(new Exception("No se bla bla"));
+                    responseObserver.onCompleted();
+                    return;
+            }
+            newChat.setName(request.getName());
+            newChat.setAdmin(creator);
+            newChat.getMembers().add(creator);
+            creator.getChats().add(newChat);
+            messageDBHandler.create(newChat);
+
+            responseObserver.onNext(newChat.toGrpc());
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
         responseObserver.onCompleted();
     }
 
@@ -151,12 +161,18 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         User user = messageDBHandler.findUserByEmail(request.getUserToAddEmail());
         Chat chat = this.messageDBHandler.find(Chat.class, UUID.fromString(request.getChatId().getUuid()));
         try {
+            if (user == null) {
+                throw new Exception("Usuario no valido");
+            }
+            if (chat.getMembers().size() >= chat.getUserLimit()) {
+                throw new Exception("XD");
+            }
             if (!chat.getMembers().contains(user)) {
                 chat.getMembers().add(user);
             }
             responseObserver.onNext(Empty.newBuilder().build());
         } catch (Exception e) {
-            responseObserver.onError(e);
+                responseObserver.onError(e);
         }
         responseObserver.onCompleted();
     }

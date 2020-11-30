@@ -63,6 +63,7 @@ message CreateChatRequest {
   UUID user_id = 1;
   string name = 2;
   ChatType chat_type = 3;
+  string partner_email = 4;
 }
 
 message SendMessageRequest {

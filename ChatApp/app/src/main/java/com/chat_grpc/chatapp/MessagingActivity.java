@@ -1,6 +1,8 @@
 package com.chat_grpc.chatapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -9,6 +11,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -44,6 +48,7 @@ public class MessagingActivity extends AppCompatActivity {
     ChatGrpc.ChatFutureStub chatFutureStub;
     Uuid.UUID chatId;
     Uuid.UUID userId;
+    ChatServer.Group group;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +101,7 @@ public class MessagingActivity extends AppCompatActivity {
         Futures.addCallback(request, new FutureCallback<ChatServer.Group>() {
             @Override
             public void onSuccess(@Nullable ChatServer.Group result) {
+                group = result;
                 runOnUiThread(() -> {
                     messageList = new ArrayList<>();
                     messageList.addAll(result.getMessagesList());
@@ -158,17 +164,39 @@ public class MessagingActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.messages_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_add_user) {
+            new CustomAddDialog(this, group).show();
+            return true;
+        }
+        return true;
+    }
+
     private String getRealPathFromURI(Uri contentURI) {
 
         String thePath = "no-path-found";
         String[] filePathColumn = {MediaStore.Images.Media.DISPLAY_NAME};
         Cursor cursor = getContentResolver().query(contentURI, filePathColumn, null, null, null);
-        if(cursor.moveToFirst()){
+        if (cursor.moveToFirst()) {
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             thePath = cursor.getString(columnIndex);
         }
         cursor.close();
-        return  thePath;
+        return thePath;
     }
 
     @Override
