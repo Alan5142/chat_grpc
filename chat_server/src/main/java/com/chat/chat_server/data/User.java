@@ -13,6 +13,8 @@ import java.util.*;
 @NamedQueries({
         @NamedQuery(name = "User.findByAuth0Id",
                 query = "select a from User a where a.auth0Id=:id"),
+        @NamedQuery(name = "User.findByEmail",
+                query = "select u from User u where u.email=:email")
 })
 public class User implements DatabaseObject {
 
@@ -32,7 +34,7 @@ public class User implements DatabaseObject {
     @JoinTable(
             name = "chats_members",
             joinColumns = @JoinColumn(name = "fk_user_id", nullable = false),
-            inverseJoinColumns = @JoinColumn(name="fk_chat_id", nullable = false)
+            inverseJoinColumns = @JoinColumn(name = "fk_chat_id", nullable = false)
     )
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = Chat.class)
     private List<Chat> memberOf = new ArrayList<>();

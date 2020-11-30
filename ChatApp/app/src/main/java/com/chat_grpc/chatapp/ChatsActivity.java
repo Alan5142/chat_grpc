@@ -1,5 +1,6 @@
 package com.chat_grpc.chatapp;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
@@ -13,8 +14,6 @@ import com.chat.grpc.Uuid;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 public class ChatsActivity extends AppCompatActivity {
 
@@ -38,7 +37,7 @@ public class ChatsActivity extends AppCompatActivity {
 
         Futures.addCallback(request, new FutureCallback<ChatServer.GetUserChatsResponse>() {
             @Override
-            public void onSuccess(@NullableDecl ChatServer.GetUserChatsResponse result) {
+            public void onSuccess(@Nullable ChatServer.GetUserChatsResponse result) {
                 for (ChatServer.Group group : result.getChatsList()) {
                     Log.i("Group", group.getName());
                 }
