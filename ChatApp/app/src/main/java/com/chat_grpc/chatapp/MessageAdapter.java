@@ -41,6 +41,7 @@ public class MessageAdapter extends ArrayAdapter<ChatServer.ChatMessage> {
                 TextView sender = (TextView) v.findViewById(R.id.senderImage);
                 sender.setText(message.getSender().getName());
                 ImageView image = (ImageView) v.findViewById(R.id.imageView);
+                Picasso.get().setLoggingEnabled(true);
                 Picasso.get().load(message.getImageMessage().getUrl()).into(image);
             }
             else {
