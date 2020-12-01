@@ -4,13 +4,11 @@ import com.chat.chat_server.data.*;
 import com.chat.grpc.ChatGrpc;
 import com.chat.grpc.ChatServer;
 import com.chat.grpc.ChatServer.Group;
-import com.chat.grpc.Uuid;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import io.minio.MinioClient;
 import io.minio.ObjectWriteResponse;
 import io.minio.PutObjectArgs;
-import io.minio.UploadObjectArgs;
 import org.lognet.springboot.grpc.GRpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,34 +16,54 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.io.ByteArrayInputStream;
-import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que gestiona las peticiones gRPC
+ */
 @GRpcService
 public class ChatService extends ChatGrpc.ChatImplBase {
 
+    /**
+     * Gestor de comunicación en tiempo real de los chats
+     */
     private ChatHandlerService chatHandlerService;
+
+    /**
+     * Gestor de la bd
+     */
     private MessageDBHandler messageDBHandler;
 
+    /**
+     * Ctor chatservice
+     * @param service servicio de comunicación en tiempo real
+     * @param messageDBHandler gestor de la bd
+     */
     @Autowired
     public ChatService(ChatHandlerService service, MessageDBHandler messageDBHandler) {
         this.chatHandlerService = service;
         this.messageDBHandler = messageDBHandler;
     }
 
-    @PersistenceContext
-    private EntityManager em;
 
-
+    /**
+     * Agrega la conexión responseObserver a la lista de clientes en espera de un chat
+     * @param request datos de la petición (id del chat)
+     * @param responseObserver stream de mensajes
+     */
     @Override
     public void joinChat(ChatServer.JoinChatRequest request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
         UUID chatId = UUID.fromString(request.getId().getUuid());
         chatHandlerService.joinChat(chatId, responseObserver);
     }
 
+    /**
+     * Crea un usuario nuevo en la bd
+     * @param request datos de la petición (email, nombre, id auth0)
+     * @param responseObserver canal para envíar la response
+     */
     @Override
     public void createUser(ChatServer.RegisterUserRequest request, StreamObserver<ChatServer.User> responseObserver) {
         User user = messageDBHandler.findUserByAuth0Id(request.getAuth0Id());
@@ -60,6 +78,11 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Obtiene la lista de chats de un usuario
+     * @param request id del usuario
+     * @param responseObserver canal para envíar la lista de chats
+     */
     @Override
     public void getUserChats(ChatServer.GetUserChatsRequest request, StreamObserver<ChatServer.GetUserChatsResponse> responseObserver) {
         User user = messageDBHandler.find(User.class, UUID.fromString(request.getUserId().getUuid()));
@@ -76,6 +99,11 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Crea un chat nuevo
+     * @param request información del nuevo chat
+     * @param responseObserver canal para envíar la información del nuevo chat
+     */
     @Override
     public void createChat(ChatServer.CreateChatRequest request, StreamObserver<Group> responseObserver) {
         try {
@@ -101,7 +129,6 @@ public class ChatService extends ChatGrpc.ChatImplBase {
                     return;
             }
             newChat.setName(request.getName());
-            newChat.setAdmin(creator);
             newChat.getMembers().add(creator);
             creator.getChats().add(newChat);
             messageDBHandler.create(newChat);
@@ -113,6 +140,11 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Envía un mensaje en un chat y hace un broadcast a todos los usuarios que escuchen en ese chat
+     * @param request información del nuevo mensaje (contenido, quien lo envío, id del chat)
+     * @param responseObserver canal por el que se enviará la información del nuevo mensaje
+     */
     @Override
     @Transactional
     public void sendMessage(ChatServer.SendMessageRequest request, StreamObserver<ChatServer.ChatMessage> responseObserver) {
@@ -143,6 +175,11 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Obtiene la información de un chat
+     * @param request información de la petición (id del chat)
+     * @param responseObserver canal para envíar la información del chat
+     */
     @Override
     public void getChat(ChatServer.GetChatRequest request, StreamObserver<Group> responseObserver) {
         UUID chatId = UUID.fromString(request.getId().getUuid());
@@ -155,6 +192,11 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Agrega un usuario a un chat
+     * @param request email del usuario a agregar
+     * @param responseObserver canal para enviar la response (empty o error)
+     */
     @Transactional
     @Override
     public void addToChat(ChatServer.AddToChatRequest request, StreamObserver<Empty> responseObserver) {
@@ -167,8 +209,8 @@ public class ChatService extends ChatGrpc.ChatImplBase {
             if (chat.getMembers().size() >= chat.getUserLimit()) {
                 throw new Exception("XD");
             }
-            if (!chat.getMembers().contains(user)) {
-                chat.getMembers().add(user);
+            if (!chat.addUser(user)) {
+                throw new Exception("XD");
             }
             responseObserver.onNext(Empty.newBuilder().build());
         } catch (Exception e) {
@@ -177,6 +219,11 @@ public class ChatService extends ChatGrpc.ChatImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Sube una imagen a MinIO
+     * @param request información de la imagen a subir
+     * @param responseObserver canal para envíar la URL del mensaje
+     */
     @Override
     public void uploadImage(ChatServer.UploadImageRequest request, StreamObserver<ChatServer.UploadImageResponse> responseObserver) {
         try {
