@@ -32,6 +32,7 @@ public class ChatsActivity extends AppCompatActivity {
     /**
      * Función que se realiza al crearse la Activity, guarda los chats del usuario
      * para mostrarse y crea el botón para añadir usuarios/grupos.
+     *
      * @param savedInstanceState Información de creación de la Activity.
      */
     @Override
@@ -72,8 +73,10 @@ public class ChatsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(ChatsActivity.this, "No se pudieron cargar los chats, checa tu conexión a internet", Toast.LENGTH_SHORT).show();
-                Log.e("error", t.getLocalizedMessage());
+                runOnUiThread(() -> {
+                    Toast.makeText(ChatsActivity.this, "No se pudieron cargar los chats, checa tu conexión a internet", Toast.LENGTH_SHORT).show();
+                    Log.e("error", t.getLocalizedMessage());
+                });
 
             }
         }, GrpcChannel.getExecutor());
@@ -82,6 +85,7 @@ public class ChatsActivity extends AppCompatActivity {
     /**
      * Pone una toolbar en la actividad para la opción de
      * recargar la Activity.
+     *
      * @param menu Toolbar de la activity.
      * @return Verdadero si fue creado exitosamente, False de lo contrario.
      */
@@ -95,6 +99,7 @@ public class ChatsActivity extends AppCompatActivity {
     /**
      * Si se selecciona la opción de "Recargar" refresca los chats
      * para que se vean los nuevos.
+     *
      * @param item Elemento de las opciones de la toolbar.
      * @return Verdadero si la acción se realizo exitosamente, False de lo contrario.
      */

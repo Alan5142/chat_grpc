@@ -5,5 +5,5 @@
     <string name="com_auth0_domain">chatgrpc.us.auth0.com</string>
     <string name="login_button">LogIn</string>
     <string name="login_error">No se pudo iniciar sesión</string>
-    <string name="grpc_host">4.tcp.ngrok.io:13713</string>
+    <string name="grpc_host">4.tcp.ngrok.io:17661</string>
 </resources>
