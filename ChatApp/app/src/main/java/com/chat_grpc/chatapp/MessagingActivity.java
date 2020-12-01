@@ -77,9 +77,15 @@ public class MessagingActivity extends AppCompatActivity {
     ChatServer.Group group;
 
     /**
+     * Mutex
+     */
+    final Object mutex = new Object();
+
+    /**
      * Función que se realiza al crearse la Activity, guarda los valores necesarios
      * de las preferencias, como el id de usuario y chat, y se encarga de llenar los
      * mensajes del chat respectivo.
+     *
      * @param savedInstanceState Información de creación de la Activity.
      */
     @Override
@@ -134,6 +140,9 @@ public class MessagingActivity extends AppCompatActivity {
             @Override
             public void onSuccess(@Nullable ChatServer.Group result) {
                 group = result;
+                synchronized (mutex) {
+                    mutex.notifyAll();
+                }
                 runOnUiThread(() -> {
                     messageList = new ArrayList<>();
                     messageList.addAll(result.getMessagesList());
@@ -199,16 +208,26 @@ public class MessagingActivity extends AppCompatActivity {
     /**
      * Si es un grupo, pone en la toolbar la opción de añadir usuarios
      * si no, crea la toolbar de forma normal.
+     *
      * @param menu Toolbar de la activity.
      * @return Verdadero si fue creado exitosamente, False de lo contrario.
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        if(group.getGroupType() == ChatServer.GroupType.GROUP) {
-            getMenuInflater().inflate(R.menu.messages_menu, menu);
+        if (group == null) {
+
+            synchronized (mutex) {
+                try {
+                    mutex.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        else{
+        // Inflate the menu; this adds items to the action bar if it is present.
+        if (group.getGroupType() == ChatServer.GroupType.GROUP) {
+            getMenuInflater().inflate(R.menu.messages_menu, menu);
+        } else {
             super.onCreateOptionsMenu(menu);
         }
         return true;
@@ -217,6 +236,7 @@ public class MessagingActivity extends AppCompatActivity {
     /**
      * Si se selecciona la opción de "Añadir usuario" crea un cuadro
      * de diálogo para recibir los datos del usuario a agregar.
+     *
      * @param item Elemento de las opciones de la toolbar.
      * @return Verdadero si la acción se realizo exitosamente, False de lo contrario.
      */
@@ -238,6 +258,7 @@ public class MessagingActivity extends AppCompatActivity {
     /**
      * Se encarga de devolver la ubicación física del archivo
      * contenido en contentURI.
+     *
      * @param contentURI Uri que apunta a un recurso.
      * @return Ruta del archivo que esté en Uri.
      */
@@ -256,9 +277,10 @@ public class MessagingActivity extends AppCompatActivity {
 
     /**
      * Se encarga de subir la imagen seleccionada al servidor.
+     *
      * @param requestCode Código de identificación del request.
-     * @param resultCode Código de resultado.
-     * @param data Lo obtenido en la actividad lanzada.
+     * @param resultCode  Código de resultado.
+     * @param data        Lo obtenido en la actividad lanzada.
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
