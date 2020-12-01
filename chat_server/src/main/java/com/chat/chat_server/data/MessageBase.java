@@ -63,7 +63,7 @@ public abstract class MessageBase {
 
     /**
      * Establece el chat al que pertenece el mensaje
-     * @param belongsTo
+     * @param belongsTo establece a quien pertenece el mensaje
      */
     public void setBelongsTo(Chat belongsTo) {
         this.belongsTo = belongsTo;
