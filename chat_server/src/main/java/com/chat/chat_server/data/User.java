@@ -66,12 +66,6 @@ public class User implements DatabaseObject {
     private Date creationDate = new Date();
 
     /**
-     * Lista con los mensajes envíados por este usuario
-     */
-    @OneToMany(targetEntity = MessageBase.class)
-    private List<MessageBase> messages = new ArrayList<>();
-
-    /**
      * Obtiene la fecha de creación del usuario
      * @return fecha de creación
      */
@@ -103,14 +97,6 @@ public class User implements DatabaseObject {
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * Obtiene la lista de mensajes que ha hecho el usuario
-     * @return lista de mensajes del usuario
-     */
-    public List<MessageBase> getMessages() {
-        return messages;
     }
 
     /**
