@@ -13,27 +13,54 @@ import android.widget.Toast;
 
 import com.chat.grpc.ChatGrpc;
 import com.chat.grpc.ChatServer;
-import com.chat.grpc.Uuid;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
+/**
+ * Dialog para añadir un nuevo usuario a un grupo.
+ */
 public class CustomAddDialog extends Dialog implements
         android.view.View.OnClickListener {
 
+    /**
+     * Activity a la que va a pertenecer el dialog.
+     */
     private Activity activity;
+    /**
+     * Cuadro de texto donde se pone el e-mail del usuario a agregar.
+     */
     private EditText e;
-    private Button yes, no;
+    /**
+     * Botón de aceptar.
+     */
+    private Button yes;
+    /**
+     * Botón de cancelar.
+     */
+    private Button no;
+    /**
+     * Cliente gRPC autogenerado.
+     */
     private ChatServer.Group group;
 
+    /**
+     * Consturctor que recibe la activity y el grupo al que
+     * pertenece.
+     * @param a Activity a la que pertenece.
+     * @param group Grupo al que pertenece el chat.
+     */
     public CustomAddDialog(Activity a, ChatServer.Group group) {
         super(a);
         this.group = group;
         this.activity = a;
     }
 
+    /**
+     * Función que se realiza al crearse el Dialog, coloca click
+     * listeners en los botones.
+     * @param savedInstanceState Información de creación de el Dialog.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +74,12 @@ public class CustomAddDialog extends Dialog implements
 
     }
 
+    /**
+     * Función que se llama en una acción de click,
+     * si la opción es "Aceptar" entonces intenta añadir un usuario
+     * al grupo, si no, solo se cierra.
+     * @param v View a la que pertenece el dialog.
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

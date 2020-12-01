@@ -19,10 +19,21 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+/**
+ * Actividad que muestra todos los chats de un usuario.
+ */
 public class ChatsActivity extends AppCompatActivity {
 
+    /**
+     * Cliente gRPC autogenerado.
+     */
     private ChatGrpc.ChatFutureStub chatGrpcClient;
 
+    /**
+     * Función que se realiza al crearse la Activity, guarda los chats del usuario
+     * para mostrarse y crea el botón para añadir usuarios/grupos.
+     * @param savedInstanceState Información de creación de la Activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +51,10 @@ public class ChatsActivity extends AppCompatActivity {
         getChats();
     }
 
+    /**
+     * Se conecta al servidor para obtener los chats del usuario y colocarlos
+     * haciendo uso del adapter correspondiente.
+     */
     public void getChats() {
         SharedPreferences sharedPreferences = getSharedPreferences("USER", 0);
         ListenableFuture<ChatServer.GetUserChatsResponse> request = chatGrpcClient.getUserChats(
@@ -64,6 +79,12 @@ public class ChatsActivity extends AppCompatActivity {
         }, GrpcChannel.getExecutor());
     }
 
+    /**
+     * Pone una toolbar en la actividad para la opción de
+     * recargar la Activity.
+     * @param menu Toolbar de la activity.
+     * @return Verdadero si fue creado exitosamente, False de lo contrario.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -71,6 +92,12 @@ public class ChatsActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Si se selecciona la opción de "Recargar" refresca los chats
+     * para que se vean los nuevos.
+     * @param item Elemento de las opciones de la toolbar.
+     * @return Verdadero si la acción se realizo exitosamente, False de lo contrario.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
