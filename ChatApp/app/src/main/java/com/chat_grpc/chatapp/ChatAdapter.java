@@ -16,17 +16,39 @@ import com.chat.grpc.ChatServer;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Adapter que se encarga de mostrar los chats de un usuario.
+ */
 public class ChatAdapter extends ArrayAdapter<ChatServer.Group> {
+    /**
+     * Layout al que pertenece la vista.
+     */
     private int resourceLayout;
+    /**
+     * Contexto de la vista.
+     */
     private Context context;
 
 
+    /**
+     * Constructor del adapter.
+     * @param context Contexto de la activity a la que se aplicara.
+     * @param resource Recursos de la activity.
+     * @param items Lista de mensajes del chat.
+     */
     public ChatAdapter(@NonNull Context context, int resource, List<ChatServer.Group> items) {
         super(context, resource, items);
         this.resourceLayout = resource;
         this.context = context;
     }
 
+    /**
+     * Construye la vista de un elemento de la lista.
+     * @param position Posición del elemento.
+     * @param convertView Vista a la que pertenece.
+     * @param parent Grupo al que pertenece la vista.
+     * @return La view ya construida.
+     */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 

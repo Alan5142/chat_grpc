@@ -15,17 +15,34 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+/**
+ * Adapter que se encarga de mostrar los mensajes de un chat.
+ */
 public class MessageAdapter extends ArrayAdapter<ChatServer.ChatMessage> {
-    private int resourceLayout;
+    /**
+     * Context de la activity actual.
+     */
     private Context context;
 
 
+    /**
+     * Constructor del adapter.
+     * @param context Contexto de la activity a la que se aplicara.
+     * @param resource Recursos de la activity.
+     * @param items Lista de mensajes del chat.
+     */
     public MessageAdapter(@NonNull Context context, int resource, List<ChatServer.ChatMessage> items) {
         super(context, resource, items);
-        this.resourceLayout = resource;
         this.context = context;
     }
 
+    /**
+     * Construye la vista de un elemento de la lista.
+     * @param position Posición del elemento.
+     * @param convertView Vista a la que pertenece.
+     * @param parent Grupo al que pertenece la vista.
+     * @return La view ya construida.
+     */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
