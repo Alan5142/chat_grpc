@@ -1,8 +1,6 @@
 package com.chat_grpc.chatapp;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -39,17 +37,51 @@ import javax.annotation.Nullable;
 
 import io.grpc.stub.StreamObserver;
 
+/**
+ * Clase que se encarga de mostrar los mensajes de un chat, ya sea
+ * de dos personas o un grupo.
+ */
 public class MessagingActivity extends AppCompatActivity {
 
+    /**
+     * Lista de mansajes.
+     */
     private List<ChatServer.ChatMessage> messageList;
+    /**
+     * Adapter utilizado para poder mostrar los mensajes.
+     */
     private MessageAdapter adapter;
+    /**
+     * Cuadro de texto donde se escriben los mensajes.
+     */
     private EditText textMessage;
+    /**
+     * Identificación de la actividad lanzada.
+     */
     private static final int PICK_IMAGE = 1;
+    /**
+     * Cliente gRPC autogenerado.
+     */
     ChatGrpc.ChatFutureStub chatFutureStub;
+    /**
+     * Identificador del chat.
+     */
     Uuid.UUID chatId;
+    /**
+     * Identificador del usuario.
+     */
     Uuid.UUID userId;
+    /**
+     * Grupo al que pertenece el chat (Puede ser de dos personas solamente o más de dos).
+     */
     ChatServer.Group group;
 
+    /**
+     * Función que se realiza al crearse la Activity, guarda los valores necesarios
+     * de las preferencias, como el id de usuario y chat, y se encarga de llenar los
+     * mensajes del chat respectivo.
+     * @param savedInstanceState Información de creación de la Activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,13 +196,30 @@ public class MessagingActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Si es un grupo, pone en la toolbar la opción de añadir usuarios
+     * si no, crea la toolbar de forma normal.
+     * @param menu Toolbar de la activity.
+     * @return Verdadero si fue creado exitosamente, False de lo contrario.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.messages_menu, menu);
+        if(group.getGroupType() == ChatServer.GroupType.GROUP) {
+            getMenuInflater().inflate(R.menu.messages_menu, menu);
+        }
+        else{
+            super.onCreateOptionsMenu(menu);
+        }
         return true;
     }
 
+    /**
+     * Si se selecciona la opción de "Añadir usuario" crea un cuadro
+     * de diálogo para recibir los datos del usuario a agregar.
+     * @param item Elemento de las opciones de la toolbar.
+     * @return Verdadero si la acción se realizo exitosamente, False de lo contrario.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -186,6 +235,12 @@ public class MessagingActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Se encarga de devolver la ubicación física del archivo
+     * contenido en contentURI.
+     * @param contentURI Uri que apunta a un recurso.
+     * @return Ruta del archivo que esté en Uri.
+     */
     private String getRealPathFromURI(Uri contentURI) {
 
         String thePath = "no-path-found";
@@ -199,6 +254,12 @@ public class MessagingActivity extends AppCompatActivity {
         return thePath;
     }
 
+    /**
+     * Se encarga de subir la imagen seleccionada al servidor.
+     * @param requestCode Código de identificación del request.
+     * @param resultCode Código de resultado.
+     * @param data Lo obtenido en la actividad lanzada.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

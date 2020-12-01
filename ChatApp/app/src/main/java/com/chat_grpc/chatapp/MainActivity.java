@@ -26,11 +26,26 @@ import com.chat.grpc.ChatServer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 
+/**
+ * Activity principal, si no hay un usuario logeado se muestra el botón de Log In, y si lo hay
+ * pasa directamente a la pestaña de tus chats.
+ */
 public class MainActivity extends AppCompatActivity {
+    /**
+     * Cliente 0auth.
+     */
     private Auth0 auth0;
 
+    /**
+     * Gestor de sesión del usuario.
+     */
     private SecureCredentialsManager credentialsManager;
 
+    /**
+     * Obtiene las credenciales del usuario y crea la Activity.
+     * Si ya se ha iniciado sesión manda directo a los chats.
+     * @param savedInstanceState Información de creación de la Activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,11 +62,19 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.login_button).setOnClickListener(v -> login());
     }
 
+    /**
+     * Intent para cambiar hacia la Activity que contiene los chats del usuario.
+     */
     private void goToMainScreen() {
         Intent intent = new Intent(MainActivity.this, ChatsActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Te permite hacer Log In en tu cuenta a través de Auth0 la cual se encarga
+     * de gestionar los usuarios, si es un nuevo usuario se ingresa su cuenta a la BD.
+     * Después ingresa a los chats del usuario.
+     */
     private void login() {
         WebAuthProvider.login(auth0)
                 .withScheme("demo")
